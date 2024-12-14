@@ -9,9 +9,12 @@ export default function MyApp() {
 	const [isShopOpen, setIsShopOpen] = useState(0);
 	const [multiplier, setMultiplier] = useState(1);
 	const [multiplierPrice, setMultiplierPrice] = useState(1000);
-	const [upgradePrice, setUpgradePrice] = useState(100);
+	const [upgradePrice, setUpgradePrice] = useState(15);
 	const [isLoaded, setIsLoaded] = useState(false);
 	const [warning, setWarning] = useState(false);
+	const [grandma, setGrandma] = useState(0);
+	const [grandmaPrice, setGrandmaPric] = useState(100);
+
         useEffect(() => {
 		const savedCookies = localStorage.getItem("cookie");
 		const savedPerSecond = localStorage.getItem("perSecond");
@@ -19,7 +22,9 @@ export default function MyApp() {
 		const savedMultiplier = localStorage.getItem("multiplier");
 		const savedUpgradePrice = localStorage.getItem("upgradePrice");
 		const savedMultiplierPrice =localStorage.getItem("multiplierPrice");
-		if (savedCookies) {
+		const savedGrandma=localStorage.getItem("grandma");
+		const savedGrandmaPrice = localStorage.getItem("grandmaPrice");
+		if (savedCookies) { 
 			setCookie(Number(savedCookies));
 
 		} 
@@ -40,6 +45,12 @@ export default function MyApp() {
 		if (savedMultiplierPrice) {
 			setMultiplierPrice(Number(savedMultiplierPrice));
 		}
+		if (savedGrandma){//
+			setGrandma(Number(savedGrandma));
+		}
+		if (savedGrandmaPrice){
+			setGrandmaPric(Number(savedGrandmaPrice));
+		}
 		setIsLoaded(true);
 	
 	}, []);
@@ -52,7 +63,9 @@ export default function MyApp() {
 		localStorage.setItem("multiplier",multiplier);
 		localStorage.setItem("upgradePrice",upgradePrice);
 		localStorage.setItem("multiplierPrice",multiplierPrice);
-	}, [cookie,perSecond,isShopOpen,multiplier]);
+		localStorage.setItem("grandma",grandma);
+		localStorage.setItem("grandmaPrice",grandmaPrice);
+	}, [cookie,perSecond,isShopOpen,multiplier,multiplierPrice,grandma,grandmaPrice]);
 
 
 	// Functions for handling the purchases
@@ -66,13 +79,13 @@ export default function MyApp() {
 	const toggleShop = () => {
 		setIsShopOpen(!isShopOpen);
 	};
-	const buyUpgrade = () => {
+	const buyCursor = () => {
 		if (cookie>=upgradePrice){
 			setCookie(cookie-upgradePrice);
 
-			setPerSecond(perSecond+1);
+			setPerSecond(perSecond+0.1);
 			/* MULTIPLY */
-		        setUpgradePrice(upgradePrice+100);
+		        setUpgradePrice(upgradePrice=> Math.ceil(upgradePrice*1.01));
 		
 
 		}
@@ -85,15 +98,25 @@ export default function MyApp() {
 
 		}
 	}
+	const buyGrandma = () => {
+		if (cookie>=grandmaPrice){
+			setGrandma(grandma+1);
+			setCookie(cookie-grandmaPrice);
+			setGrandmaPric(grandmaPrice+120);
+			setPetSecond(perSecond+1);
+			setGrandmaPric(grandmaPrice => Math.ceil(grandmaPrice*15.01));
+		}
+	}
 	const deleteData = () => {
 		if (window.confirm("Are you sure you want to delete your data? this action cannot be undone.")){
 			localStorage.clear();
 			setCookie(0);
 			setPerSecond(0);
 			setIsShopOpen(false);
-			setUpgradePrice(100);
+			setUpgradePrice(15);
 			setMultiplierPrice(1000);
 			setMultiplier(1);
+			setGrandmaPric(100);
 
 		}
 	};
@@ -101,7 +124,8 @@ export default function MyApp() {
 		const interval = setInterval(() => {
 			setCookie((prev) => prev + perSecond*multiplier);
 		}, 1000);
-
+	
+	
 		return () => clearInterval(interval);
 	}, [perSecond,multiplier]);
 // Load Site
@@ -121,12 +145,16 @@ export default function MyApp() {
 
 			{isShopOpen && (
 				<div>				<h2> Shop</h2>
-				<button onClick={buyUpgrade}>
+				<button onClick={buyCursor}>
 				Buy Upgrade ({upgradePrice} Cookies, gives 1 per sec)
 				</button>
 
 				<button onClick={buyMultiplier}>
 				Buy Multiplier Upgrade ({multiplierPrice}$)
+				</button>
+				Hire a cute grandma to bake cookies for you!
+				<button onClick={buyGrandma}>
+				Buy a Grandma ({grandmaPrice}🍪, 2 Cookies/sec)
 				</button>
 				</div>
 			)}
